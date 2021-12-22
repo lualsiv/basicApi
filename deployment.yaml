@@ -1,0 +1,59 @@
+﻿---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapi-server
+  #namespace: go
+  labels:
+    app: webapi
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: webapi
+  template:
+    metadata:
+      labels:
+        app: webapi
+    spec:
+      imagePullSecrets:
+      - name: pipeline-docker-registry
+      containers:
+      - name: webapi
+        image: ${CICD_IMAGE}:${CICD_EXECUTION_SEQUENCE}
+        ports:
+        - containerPort: 80
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: webapi-service
+  #namespace: go
+spec:
+  selector:
+    app: webapi
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  #namespace: go
+  name: webapi-ingress
+  annotations:
+    allow.http: "false"
+spec:
+  rules:
+  - host: webapi.rancher.lualsiv.dev.br
+    http:
+      paths:
+        - path: /
+          backend:
+            serviceName: webapi-service
+            servicePort: 80

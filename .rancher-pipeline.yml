@@ -1,0 +1,12 @@
+﻿
+stages:
+- name: Publish & Build image
+  steps:
+  - publishImageConfig:
+      dockerfilePath: ./basicApi/Dockerfile
+      buildContext: .
+      tag: webapi-server:${CICD_EXECUTION_SEQUENCE}      
+- name: Deploy
+  steps:
+  - applyYamlConfig:
+      path: ./deployment.yaml
